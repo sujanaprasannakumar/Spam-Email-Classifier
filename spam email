@@ -1,0 +1,39 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+
+data = {
+    'label': ['ham','spam','ham','spam','ham','spam','spam','ham'],
+    'text': [
+        'Hey shall we meet tomorrow',
+        'Win cash now free prize',
+        'Please send assignment file',
+        'URGENT claim your prize now',
+        'Let us discuss project',
+        'Congratulations you won lottery',
+        'Free entry win money now',
+        'Meeting regarding project'
+    ]
+}
+
+df = pd.DataFrame(data)
+df['label'] = df['label'].map({'ham':0,'spam':1})
+
+X_train, X_test, y_train, y_test = train_test_split(
+    df['text'], df['label'], test_size=0.25, random_state=42
+)
+
+vectorizer = TfidfVectorizer(stop_words='english', ngram_range=(1,2))
+X_train_vec = vectorizer.fit_transform(X_train)
+
+model = MultinomialNB(alpha=0.1)
+model.fit(X_train_vec, y_train)
+
+def predict_email(msg):
+    return "Spam" if model.predict(vectorizer.transform([msg]))[0]==1 else "Not Spam"
+
+print(predict_email("URGENT! Claim your prize now"))
+print(predict_email("Please send assignment file"))
+print(predict_email("Congratulations! You have won a free lottery. Claim now!!!"))
+print(predict_email("Hey, shall we meet tomorrow for project discussion?"))
